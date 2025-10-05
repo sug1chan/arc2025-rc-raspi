@@ -4,8 +4,12 @@ class Camera():
     run = False
 
     def __init__(self,
-                 dev_id = 0, ):
-        self.cap = cv2.VideoCapture(dev_id)
+                 dev_id = 0,
+                 path   = None):
+
+        _tmp = dev_id if path is None else path
+        self.cap = cv2.VideoCapture(_tmp)
+
         self.run = True
 
     def read(self, ):
@@ -35,12 +39,22 @@ class Camera():
             # TODO: Error Handling
             pass
 
-def test():
-    cam = Camera()
+def test(mp4 = None):
+    cam = Camera(path = mp4)
+
+    height = cam.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    width  = cam.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    fps    = cam.cap.get(cv2.CAP_PROP_FPS)
+    count  = cam.cap.get(cv2.CAP_PROP_FRAME_COUNT)
+
+    print("frame size  : {}x{}", height, width)
+    print("frame FPS   : {}", fps)
+    print("frame count : {}", count)
 
     while cam.isOpened():
         try:
             frame = cam.read()
+            frame = cv2.resize(frame, None, fx=.5, fy=.5)
             cv2.imshow('test camera', frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -51,5 +65,6 @@ def test():
     cam.release()
 
 if __name__ == "__main__":
-    test()
+    mp4_path = "../data/eggplant.mp4"
+    test(mp4_path)
 

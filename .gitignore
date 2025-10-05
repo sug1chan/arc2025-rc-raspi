@@ -1,6 +1,7 @@
 # user settings
 
 data/**
+test/**
 !data/README.md
 
 

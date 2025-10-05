@@ -40,7 +40,8 @@ class Camera():
             pass
 
 def test(mp4 = None):
-    cam = Camera(path = mp4)
+    cam = Camera(dev_id = cv2.CAP_V4L2, path = mp4)
+    cam.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
 
     height = cam.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     width  = cam.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
@@ -66,5 +67,6 @@ def test(mp4 = None):
 
 if __name__ == "__main__":
     mp4_path = "../data/eggplant.mp4"
+#    mp4_path = None
     test(mp4_path)
 

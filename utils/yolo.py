@@ -10,25 +10,29 @@ class DetectEGP():
         self.yolo    = YOLO(self.weights)
 
     def detect(self,
-               frame):
-        return self.yolo(frame)
+               frame,
+               save = False,):
+        return self.yolo(frame, save=save)
 
     def track(self, frame):
         pass
 
 def test():
-    MODEL = "../data/first_model.pt"
-    VIDEO = "../data/"
+    MODEL  = "../data/first_model.pt"
+    VIDEO  = "../data/test.mp4"
+    OUTPUT = "../data/result.mp4"
 
-    model = DetectEGP(model = MODEL)
-    cam = Camera()
+    model = DetectEGP(weights = MODEL)
+    cam = Camera(path = VIDEO)
 
     while cam.isOpened():
         frame = cam.read()
 
         try:
             frame = cam.read()
-            frame = model.detect(frame)
+            res   = model.detect(frame, save = False)
+            annotated_frame = res[0].plot()
+
             cv2.imshow('test camera', frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):

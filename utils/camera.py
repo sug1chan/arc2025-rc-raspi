@@ -20,15 +20,17 @@ class Camera():
                 return frame
             else:
                 # TODO: Error Handling
-                self.run = False
+                self.run = None
         else:
             # TODO: Error Handling
-            self.run = False
+            self.run = None
+
+        return None
 
     def isOpened(self, ):
         if not self.run:
             # TODO: Error Handling
-            pass
+            return False
         return self.cap.isOpened()
 
     def release(self, ):
@@ -66,7 +68,7 @@ def test(mp4 = None):
     cam.release()
 
 if __name__ == "__main__":
-    mp4_path = "../data/eggplant.mp4"
-#    mp4_path = None
+    #mp4_path = "../data/eggplant.mp4"
+    mp4_path = None
     test(mp4_path)
 

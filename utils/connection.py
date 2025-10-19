@@ -1,3 +1,5 @@
+from socket_utils.command import *
+
 import socket, time
 from threading import Thread, Event
 
@@ -79,3 +81,25 @@ class ClientSocketCom():
             self.client_sock.close()
             self.client_sock = None
 
+def debug():
+    test_addr = "127.0.0.1"
+    test_port = 8000
+    command = [(CAT_MOVE, CAT_MOVE_OPT),
+               (CAT_SLOW_MODE, CAT_SLOW_OPT),
+               (HEATER_MODE, HTR_MODE_OPT),
+               (ARM_MODE, ARM_OPT),
+               (EMERGENCY_STOP, E_STOP_OPT),
+               (SERVO_DO, SERVO_OPT), ]
+
+    sock = ClientSocketCom(test_addr, test_port)
+    
+    sock.start()
+
+    for cmd, opts in command:
+        for opt in opts.dbg_list:
+            msg = cmd.pack(opt)
+            sock.sendMsg(msg)
+
+
+if __name__ == "__main__":
+    debug()

@@ -1,5 +1,5 @@
 import cv2
-from camera import Camera
+from camera import Camera, MP4_Saver
 from ultralytics import YOLO
 
 DEFAULT_THRESHOLD = .9
@@ -58,7 +58,7 @@ class DetectEGP():
 def test():
     MODEL  = "../data/win/data/first_model.pt"
     VIDEO  = "../data/win/data/eggplant.mp4"
-    OUTPUT = "../data/win/data/result.mp4"
+    OUTPUT = "../data/win/data/result_2.mp4"
 
     model  = DetectEGP(weights = MODEL, threshold = .8)
     cam    = Camera(path = VIDEO)
@@ -66,8 +66,13 @@ def test():
     width   = int(cam.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height  = int(cam.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps     = float(cam.cap.get(cv2.CAP_PROP_FPS))
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    out = cv2.VideoWriter(OUTPUT, fourcc, fps, (width, height))
+
+    out     = MP4_Saver(OUTPUT,
+                        width,
+                        height,
+                        fps)
+    # fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    # out = cv2.VideoWriter(OUTPUT, fourcc, fps, (width, height))
 
     while cam.isOpened():
         try:

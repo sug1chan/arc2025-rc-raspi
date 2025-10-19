@@ -12,9 +12,9 @@ class Camera():
 
         self.run = True
 
-        self.width  = int(cam.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.height = int(cam.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.fps    = float(cam.cap.get(cv2.CAP_PROP_FPS))
+        self.width  = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.fps    = float(self.cap.get(cv2.CAP_PROP_FPS))
 
         self.size   = (self, self.width, self.height)
 
@@ -73,9 +73,9 @@ def test(mp4 = None):
     cam = Camera(dev_id = cv2.CAP_V4L2, path = mp4)
     cam.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
 
-    height = cam.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    width  = cam.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    fps    = cam.cap.get(cv2.CAP_PROP_FPS)
+    width  = cam.width
+    height = cam.height
+    fps    = cam.fps
     count  = cam.cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
     print("frame size  : {}x{}", height, width)

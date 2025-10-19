@@ -63,9 +63,9 @@ def test():
     model  = DetectEGP(weights = MODEL, threshold = .8)
     cam    = Camera(path = VIDEO)
 
-    width   = int(cam.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height  = int(cam.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps     = float(cam.cap.get(cv2.CAP_PROP_FPS))
+    width   = cam.width
+    height  = cam.height
+    fps     = cam.fps
 
     out     = MP4_Saver(OUTPUT,
                         width,

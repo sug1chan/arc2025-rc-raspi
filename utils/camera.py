@@ -12,6 +12,12 @@ class Camera():
 
         self.run = True
 
+        self.width  = int(cam.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.height = int(cam.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.fps    = float(cam.cap.get(cv2.CAP_PROP_FPS))
+
+        self.size   = (self, self.width, self.height)
+
     def read(self, ):
         if self.run and self.isOpened():
             ret, frame = self.cap.read()
@@ -40,6 +46,28 @@ class Camera():
         else:
             # TODO: Error Handling
             pass
+
+class MP4_Saver():
+    def __init__(self,
+                 save_path,
+                 width,
+                 height,
+                 fps,):
+        self.save_path = save_path
+        self.width     = width
+        self.height    = height
+        self.fps       = fps
+
+        self.fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        self.writer = cv2.VideoWriter(self.save_path,
+                                      self.fourcc,
+                                      self.fps, 
+                                      (self.width,
+                                       self.height))
+
+    def write(self,
+              img):
+       return self.writer.write(img)
 
 def test(mp4 = None):
     cam = Camera(dev_id = cv2.CAP_V4L2, path = mp4)

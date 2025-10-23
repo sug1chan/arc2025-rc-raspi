@@ -5,7 +5,11 @@ class Camera():
 
     def __init__(self,
                  dev_id = 0,
-                 path   = None):
+                 path   = None,
+                 logger = None, ):
+
+        self.log = logger.getChild(self.__class__.__name__) \
+                   if not logger is None else None
 
         _tmp = dev_id if path is None else path
         self.cap = cv2.VideoCapture(_tmp)
@@ -17,6 +21,8 @@ class Camera():
         self.fps    = float(self.cap.get(cv2.CAP_PROP_FPS))
 
         self.size   = (self, self.width, self.height)
+
+        self.log.info("初期化に成功しました。")
 
     def read(self, ):
         if self.run and self.isOpened():
@@ -52,11 +58,15 @@ class MP4_Saver():
                  save_path,
                  width,
                  height,
-                 fps,):
+                 fps,
+                 logger = None, ):
         self.save_path = save_path
         self.width     = width
         self.height    = height
         self.fps       = fps
+
+        self.log    = logger.getChild(self.__class__.__name__) \
+                      if not logger is None else None
 
         self.fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         self.writer = cv2.VideoWriter(self.save_path,
@@ -64,6 +74,8 @@ class MP4_Saver():
                                       self.fps, 
                                       (self.width,
                                        self.height))
+
+        self.log.info("初期化に成功しました。")
 
     def write(self,
               img):

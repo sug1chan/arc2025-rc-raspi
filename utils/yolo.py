@@ -34,12 +34,15 @@ class DetectEGP():
     def __init__(self,
                  weights,
                  threshold = DEFAULT_THRESHOLD,
-                 verbose   = False):
+                 logger    = None,
+                 verbose   = False,):
         self.weights   = weights
         self.threshold = threshold
         self.verbose   = verbose
 
         # setup
+        self.log       = logger.getChild(self.__class__.__name__) \
+                         if not logger is None else None
         self.yolo      = YOLO(self.weights)
 
     def detect(self,

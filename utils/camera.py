@@ -1,4 +1,6 @@
 import cv2
+import logging
+from logging import getLogger
 
 class Camera():
     run = False
@@ -8,8 +10,8 @@ class Camera():
                  path   = None,
                  logger = None, ):
 
-        self.log = logger.getChild(self.__class__.__name__) \
-                   if not logger is None else None
+        self.logger = logger.getChild(self.__class__.__name__) \
+                      if not logger is None else None
 
         _tmp = dev_id if path is None else path
         self.cap = cv2.VideoCapture(_tmp)
@@ -22,7 +24,7 @@ class Camera():
 
         self.size   = (self, self.width, self.height)
 
-        self.log.info("初期化に成功しました。")
+        self.log(logging.INFO, "初期化に成功しました。")
 
     def read(self, ):
         if self.run and self.isOpened():
@@ -53,6 +55,13 @@ class Camera():
             # TODO: Error Handling
             pass
 
+    def log(self,
+            level,
+            message):
+        if self.logger is None:
+            return
+        return self.logger.log(level, message)
+
 class MP4_Saver():
     def __init__(self,
                  save_path,
@@ -65,7 +74,7 @@ class MP4_Saver():
         self.height    = height
         self.fps       = fps
 
-        self.log    = logger.getChild(self.__class__.__name__) \
+        self.logger = logger.getChild(self.__class__.__name__) \
                       if not logger is None else None
 
         self.fourcc = cv2.VideoWriter_fourcc(*"mp4v")
@@ -75,20 +84,37 @@ class MP4_Saver():
                                       (self.width,
                                        self.height))
 
-        self.log.info("初期化に成功しました。")
+        self.log(logging.INFO, "初期化に成功しました。")
 
     def write(self,
               img):
        return self.writer.write(img)
+    
+    def log(self,
+            level,
+            message):
+        if self.logger is None:
+            return
+        return self.logger.log(level, message)
 
 def test(mp4 = None):
-    cam = Camera(dev_id = cv2.CAP_V4L2, path = mp4)
+    logger = getLogger("test")
+    logger.setLevel(logging.INFO)
+    cam = Camera(dev_id = cv2.CAP_V4L2,
+                 path = mp4,
+                 logger = logger)
     cam.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
 
     width  = cam.width
     height = cam.height
     fps    = cam.fps
     count  = cam.cap.get(cv2.CAP_PROP_FRAME_COUNT)
+
+    mp4 = MP4_Saver("../data/win/data/test_camera.mp4",
+                    width,
+                    height,
+                    fps,
+                    logger = logger, )
 
     print("frame size  : {}x{}", height, width)
     print("frame FPS   : {}", fps)
@@ -108,7 +134,6 @@ def test(mp4 = None):
     cam.release()
 
 if __name__ == "__main__":
-    #mp4_path = "../data/eggplant.mp4"
-    mp4_path = None
+    mp4_path = "../data/win/data/eggplant.mp4"
     test(mp4_path)
 

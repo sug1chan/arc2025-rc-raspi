@@ -1,0 +1,36 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "output": {
+            "format": "%(asctime)s %(name)s: %(filename)s:%(lineno)d - %(levelname)s: %(message)s"
+        }
+    },
+    
+    "handlers": {
+        "consoleHandler": {
+            "class": "logging.StreamHandler",
+            "level": "INFO",
+            "formatter": "output",
+            "stream": "ext://sys.stdout"
+        },
+        "fileHandler": {
+            "class": "logging.FileHandler",
+            "level": "INFO",
+            "formatter": "output",
+            "stream": "/var/log/arc2025.log"
+        }
+    },
+    "loggers": {
+        "__main__": {
+            "level": "DEBUG",
+            "handlers": ["consoleHandler", "fileHandler"],
+            "propagate": false
+        }
+    },
+
+    "root": {
+        "handlers": ["consoleHandler", "fileHandler"],
+        "level": "INFO"
+    }
+}

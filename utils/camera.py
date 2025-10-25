@@ -99,7 +99,7 @@ class MP4_Saver():
 
 def test(mp4 = None):
     logger = getLogger("test")
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     cam = Camera(dev_id = cv2.CAP_V4L2,
                  path = mp4,
                  logger = logger)
@@ -110,7 +110,7 @@ def test(mp4 = None):
     fps    = cam.fps
     count  = cam.cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
-    mp4 = MP4_Saver("../data/win/data/test_camera.mp4",
+    mp4 = MP4_Saver("../data/win/test_camera.mp4",
                     width,
                     height,
                     fps,
@@ -124,16 +124,19 @@ def test(mp4 = None):
         try:
             frame = cam.read()
             frame = cv2.resize(frame, None, fx=.5, fy=.5)
-            cv2.imshow('test camera', frame)
+            # cv2.imshow('test camera', frame)
+            mp4.write(frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-        except:
+        except Exception as e:
+            print(e)
             break
         
     cam.release()
 
 if __name__ == "__main__":
-    mp4_path = "../data/win/data/eggplant.mp4"
+    #mp4_path = "../data/win/data/eggplant.mp4"
+    mp4_path = "../data/win/eggplant.mp4"
     test(mp4_path)
 

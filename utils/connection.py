@@ -1,5 +1,3 @@
-from socket_utils.command import *
-
 import socket, time
 from threading import Thread, Event
 
@@ -102,4 +100,5 @@ def debug():
 
 
 if __name__ == "__main__":
+    from socket_utils.command import *
     debug()

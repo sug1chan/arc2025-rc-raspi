@@ -1,5 +1,4 @@
 import cv2
-from camera import Camera, MP4_Saver
 from ultralytics import YOLO
 
 DEFAULT_THRESHOLD = .9
@@ -101,5 +100,6 @@ def test():
     cam.release()
         
 if __name__ == "__main__":
+    from . import Camera, MP4_Saver
     test()
 

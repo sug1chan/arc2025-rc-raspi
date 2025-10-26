@@ -6,6 +6,7 @@ import select
 import socket
 import threading
 import time
+import signal
 
 import mpu
 
@@ -14,10 +15,16 @@ import mpu
 # import pandas
 # import smbus  # import SMBus module of I2C
 
+# シグナル受信時に終了処理実施
+def handler(signum, frame):
+    raise SystemExit("SIGNAL REVICE! PROCESS SHUTTING!")
 
-def MyException(Exception):
-    pass
+signal.signal(signal.SIGINT, handler)
+# signal.signal(signal.SIGKILL, handler)
 
+# def MyException(Exception):
+#     pass
+interrupt_event = threading.Event()
 # Threading Socket
 class MpuServer(threading.Thread):
     def __init__(self):
@@ -34,18 +41,37 @@ class MpuServer(threading.Thread):
     
     def run(self):
         print("!!! Socket Waiting !!!")
-        while True:
-            try:
-                message, clt_addr = self.sock.recvfrom(self.bufsize)
-                message = message.decode(encoding='utf-8')
-                print(message)
-                print(bus.x, bus.y, bus.x, bus.rad)
-                # if message == "AAA":
-                #     raise MyException(None)
-            except MyException as e:
-                print("Socket CLosing")
-                self.sock.close()
-                break
+        try:
+            while not interrupt_event.is_set() :
+                self.sock.settimeout(1.0)
+                try:
+                    message, clt_addr = self.sock.recvfrom(self.bufsize)
+                    message = message.decode(encoding='utf-8')
+                    # messageの内訳
+                    #   get: 位置情報の受け取り
+                    #   shut: プロセスの停止
+                    #   reset: 位置情報の初期化
+                    print(message)
+                    if message == "get":
+                        if bus.timer < mpu.STAY_TIME:
+                            print("静止状態のデータ収集中です。")
+                            print(bus.x, bus.y, bus.x, bus.rad)
+                        else:
+                            print("データ送信")
+                            result = "{}, {}, {}, {}".format(bus.x, bus.y, bus.x, bus.rad)
+                            self.sock.sendto(result.encode(), clt_addr)
+                    elif message == "shut":
+                        print("プロセスの停止")
+                    elif message == "reset":
+                        print("位置情報の初期化")
+                    else:
+                        print("予期せぬメッセージ")
+                        pass
+                except socket.timeout:
+                    continue
+        finally:
+            print("!!Socket CLosing!!")
+            self.sock.close()
 
 if __name__ == "__main__":
     bus = mpu.Mpu()
@@ -60,8 +86,14 @@ if __name__ == "__main__":
 
  
     # スレッドによるタイマー割り込みでのデータ取得
-    while True:
-        tm = threading.Thread(target=bus.tm_callback)
-        tm.start()
-        next_time = ((base_time - time.time()) % interval) or interval
-        time.sleep(next_time)
+    try:
+        while True:
+            tm = threading.Thread(target=bus.tm_callback)
+            tm.start()
+            next_time = ((base_time - time.time()) % interval) or interval
+            time.sleep(next_time)
+    except SystemExit:
+        # プロセス終了処理
+        print("!!PROCESS SHUTTING!!")
+        interrupt_event.set()
+        tm.join()

@@ -5,10 +5,12 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 ADDR = ("localhost", 6050)
 
 # while True:
-data = "AAA"
+data = "get"
 sock.sendto(data.encode('utf-8'), ADDR)
     # if not data:
     #     break
+result, srv_addr = sock.recvfrom(1024)
+print(result.decode())
 
 sock.close()
 

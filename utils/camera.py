@@ -1,3 +1,4 @@
+import numpy as np
 import cv2
 import logging
 from logging import getLogger
@@ -22,7 +23,10 @@ class Camera():
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps    = float(self.cap.get(cv2.CAP_PROP_FPS))
 
-        self.size   = (self, self.width, self.height)
+        self.wcenter = self.width / 2
+        self.hcenter = self.height / 2
+        self.center  = np.array([self.wcenter, self.hcenter])
+        self.size    = np.array([self.width, self.height])
 
         self.log(logging.INFO, "初期化に成功しました。")
 

@@ -8,7 +8,7 @@ from .gyro import GyroSensor
 from .ir import IRSensor
 
 # auto control
-from .ac_util import State, get_mode
+from .ac_util import *
 
 # socket
 from .connection import *

@@ -11,16 +11,20 @@ import cv2, argparse
 
 DEFAULT_EPSILON = 32
 
-DEFAULT_THE_EPSILON = .05
-DEFAULT_DST_EPSILON = .05
+DEFAULT_THE_EPSILON    = .05
+DEFAULT_DST_EPSILON    = .05
+DEFAULT_AREA_THRESHOLD = 1e4
+DEFAULT_CUTTING_RATIO  = .60
 LOGCONF = "./logconf.json"
 
 class AutoControl():
     def __init__(self,
                  mode = 0,
-                 epsilon     = DEFAULT_EPSILON,
-                 rad_epsilon = DEFAULT_THE_EPSILON,
-                 dst_epsilon = DEFAULT_DST_EPSILON,
+                 epsilon        = DEFAULT_EPSILON,
+                 rad_epsilon    = DEFAULT_THE_EPSILON,
+                 dst_epsilon    = DEFAULT_DST_EPSILON,
+                 area_threshold = DEFAULT_AREA_THRESHOLD,
+                 cutting_ratio  = DEFAULT_CUTTING_RATIO,
                  logconf = LOGCONF):
         # --- LOGGER SETTINGS ---
         self.log    = get_logger(self.__class__.__name__,
@@ -32,7 +36,7 @@ class AutoControl():
                                  logger    = self.log,
                                  verbose   = False)
         self.fcamera = Camera(dev_id = cfg.FRONT_ID)
-        self.bcamera = Camera(dev_id = cfg.BIRDS_EYE_ID)
+        # self.bcamera = Camera(dev_id = cfg.BIRDS_EYE_ID)
 
         self.sfd     = ClientSocketCom(cfg.IP_ADDR,
                                        cfg.TCP_PORT, )
@@ -54,6 +58,8 @@ class AutoControl():
         self.epsilon = epsilon
         self.rad_epsilon = 2 * np.pi * rad_epsilon
         self.dst_epsilon = dst_epsilon
+        self.area_threshold    = area_threshold
+        self.cutting_threshold = self.fcamera.size.prod() * cutting_ratio
 
     def init(self, ):
         self.mode   = State.INIT
@@ -62,9 +68,6 @@ class AutoControl():
         self.sfd.connect()
 
         # --- init ---
-        # camera
-        # self.fcam_center = self.fcamera.width / 2
-        # self.bcam_center = self.bcamera.width / 2
 
         # gyro
         self.gyro_position = self.gyro.get_xy()
@@ -77,6 +80,7 @@ class AutoControl():
 
         while True:
             try:
+                print(f"MAIN: next mode {self.mode}")
                 _f = self.func[self.mode]
 
                 self.mode = _f()
@@ -86,6 +90,7 @@ class AutoControl():
 
                 if self.mode == State.FINISH:
                     # 終了したことをログする。
+                    print("Finished!")
                     return
 
             except Exception as e:
@@ -103,10 +108,14 @@ class AutoControl():
         _msg = cmd.pack(opt)
         self.sfd.sendMsg(self, _msg)
 
+    def slowmode(self, flag):
+        opt = CAT_SLOW_OPT.on if flag else CAT_SLOW_OPT.off
+        self.sendmsg(CAT_SLOW_MODE, opt)
+
     # - yolo and camera
     # カメラからナスを検知し、BBox インスタンスを返す
     def detect(self,
-               camera = self.fcamera):
+               camera, ):
         if camera.isOpened():
             _frame = camera.read()
             return self.model.detect(frame, )
@@ -122,19 +131,33 @@ class AutoControl():
     def is_center(self,
                   bbox,
                   center):
-        bp = 0
-        _diff = bp - center
+        _diff_x = (bbox.center - center)[0]
 
-        if _diff <= self.epsilon:
+        if _diff_x <= -self.epsilon:
             return -1
-        elif _diff < self.epsilon:
+        elif _diff_x < self.epsilon:
             return 0
         else:
             return 1
 
+    def get_bbox(self,
+                 bboxes, ):
+        res = None
+
+        for bbox in bboxes:
+            if bbox.area < self.area_threshold:
+                continue
+
+            if (res is None) or \
+               (bbox.area > res.area):
+                self.egp_target = bbox
+
+        return res
+
+
     # --- robot behavior ---
     def _finish(self, ):
-        pass
+        return None
 
     def _init(self, ):
         for direction, distance in self.init_mode:
@@ -155,20 +178,13 @@ class AutoControl():
         while self.egp_target is None:
             detected = self.detect(self.bcamera)
 
-            if detected.isNone():
+            self.egp_target = self.get_bbox(detected)
+
+            if self.egp_target is None:
                 if _count > 0:
                     _count -= 1
                 else:
-                    _move_mode = True
-                
-                continue
-
-            size = 0
-            target = np.array([0, 0])
-            for bbox in detected:
-                # if bbox.size > size:
-                #     size = bbox
-                pass
+                    self._backward(100)
 
         return State.APPROACH
 
@@ -177,7 +193,47 @@ class AutoControl():
         return State.ADJUSTMENT
 
     def _adjustment(self, ):
-        pass
+        opt_lst = { -1: CAT_MOVE_OPT.ltrn,
+                     0: CAT_MOVE_OPT.fwd,
+                     1: CAT_MOVE_OPT.rtrn, }
+
+        _count = 10
+        color_mode = False
+
+        self.slowmode(True)
+
+        while True:
+            if self.ir1.get() and self.ir2.get():
+                break
+
+            _bboxes = self.detect(self.fcamera)
+            _target = self.get_bboes(_bboxes)
+
+            if _target is None:
+                self.sendmsg(CAT_MOVE, CAT_MOVE_OPT.stop)
+
+                if _count > 0:
+                    _count -= 1
+
+                if _count == 0:
+                    color_mode = True
+                    self.sendmsg(CAT_MOVE, CAT_MOVE_OPT.fwd)
+
+                continue
+
+            if not _target is None:
+                _count = 10
+
+                if _target.area > self.cutting_threshold:
+                    break
+
+                ret = self.is_center(_target, self.fcamera)
+                opt = opt_lst[ret]
+                self.sendmsg(CAT_MOVE, opt)
+        
+        self.sendmsg(CAT_MOVE, CAT_SLOW_OPT.stop)
+        self.slowmode(False)
+
 
     def _cutting(self, ):
         opt = SERVO_OPT.do

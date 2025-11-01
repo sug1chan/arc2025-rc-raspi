@@ -1,3 +1,5 @@
+import numpy as np
+
 class State():
     FINISH     = 0
     INIT       = 1

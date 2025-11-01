@@ -1,7 +1,19 @@
+import numpy as np
 import cv2
 from ultralytics import YOLO
 
 DEFAULT_THRESHOLD = .9
+
+class BB():
+    def __init__(self,
+                 bbox):
+        self.bbox = bbox
+        sx, sy, ex, ey = map(float, self.bbox)
+        self._start = np.array([sx, sy])
+        self._end   = np.array([ex, ey])
+
+        self.center = (self._start + self._end) / 2
+        self.area   = (self._end - self._start).prod()
 
 class BBoxes():
     def __init__(self,
@@ -27,7 +39,12 @@ class BBoxes():
         return self.result is None
 
     def __iter__(self, ):
-        yield from self.get_bboxes()
+        # yield from self.get_bboxes()
+        self._bbox_iter = iter(self.get_bboxes())
+        return self
+
+    def __next__(self, ):
+        return BB(self._bbox_iter.__next__())
 
 class DetectEGP():
     def __init__(self,
@@ -58,11 +75,13 @@ class DetectEGP():
                                       verbose = self.verbose, ))
 
 def test():
-    MODEL  = "../data/win/data/first_model.pt"
-    VIDEO  = "../data/win/data/eggplant.mp4"
-    OUTPUT = "../data/win/data/result_2.mp4"
+    MODEL  = "../data/win/first_model.pt"
+    # VIDEO  = "../data/win/eggplant.mp4"
+    #VIDEO  = "../data/win/eggplant_under.mp4"
+    VIDEO  = "../data/win/front_camera.mp4"
+    OUTPUT = "../data/win/result_front_camera.mp4"
 
-    model  = DetectEGP(weights = MODEL, threshold = .8)
+    model  = DetectEGP(weights = MODEL, threshold = .65)
     cam    = Camera(path = VIDEO)
 
     width   = cam.width
@@ -76,6 +95,8 @@ def test():
     # fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     # out = cv2.VideoWriter(OUTPUT, fourcc, fps, (width, height))
 
+    print(f"front: {cam.size}")
+    print(f"front: {cam.center}")
     while cam.isOpened():
         try:
             frame = cam.read()
@@ -84,6 +105,16 @@ def test():
 
             if res.isNone():
                 break
+
+            max_bbox = None
+            for bbox in res:
+                if (max_bbox is None) or \
+                   (max_bbox.area < bbox.area):
+                    max_bbox = bbox
+
+            if not max_bbox is None:
+                print(bbox.center, bbox.area)
+
 
             annotated_frame = res.plot()
 
@@ -100,6 +131,6 @@ def test():
     cam.release()
         
 if __name__ == "__main__":
-    from . import Camera, MP4_Saver
+    from camera import Camera, MP4_Saver
     test()
 

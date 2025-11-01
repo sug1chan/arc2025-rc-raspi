@@ -10,7 +10,7 @@ BIRDS_EYE_ID = 0
 
 # --- yolo settings -----------------------------
 
-YOLO_MODEL_PATH = "./data/model"
+YOLO_MODEL_PATH = "./data/model.pt"
 YOLO_THRESHOLD  = .9
 
 YOLO_IS_SAVE    = False

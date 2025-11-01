@@ -45,14 +45,14 @@ class Mpu:
         # self.gyro_data = []
         self.x = config.LOCATE_X
         self.y = config.LOCATE_Y
-        self.v = config.LOCATE_VEROCITY
         self.rad = config.LOCATE_RADIAN
+        self.v = config.LOCATE_VEROCITY
         # 移動中かの判断
         self.max_acc = config.MAX_ACC
         self.min_acc = config.MIN_ACC
         self.max_rad = config.MAX_RADIAN
         self.min_rad = config.MIN_RADIAN
-        self.flag = config.STAY_FLAG
+        self.stay_flag = config.STAY_FLAG
 
     # 生データ取得
     def read_raw_data(self, addr):
@@ -85,6 +85,7 @@ class Mpu:
 
         # self.gyro_data.append([acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z])
         # print ("Gx=%.2f" %Gx, u'\u00b0'+ "/s", "\tGy=%.2f" %Gy, u'\u00b0'+ "/s", "\tGz=%.2f" %Gz, u'\u00b0'+ "/s", "\tAx=%.2f g" %Ax, "\tAy=%.2f g" %Ay, "\tAz=%.2f g" %Az)
+        # print ("\tAx=%.2f g" %acc_x, "\tGz=%.2f" %gyro_z, u'\u00b0'+ "/s")
         # self.counter += self.counter
         # if self.counter == 1000:
         #     # データ転送処理？
@@ -94,21 +95,22 @@ class Mpu:
         # self.gyro_data = [acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z]        
 
         # 停止状態の確認および停止判定の値を保持する。
-        self.flag, self.max_acc, self.min_acc, self.max_rad, self.min_rad = locater.is_stay(self.timer, acc_x, gyro_z, self.max_acc, self.min_acc, self.max_rad, self.min_rad)
-
+        self.stay_flag, self.max_acc, self.min_acc, self.max_rad, self.min_rad = locater.is_stay(self.timer, acc_x, gyro_z, self.max_acc, self.min_acc, self.max_rad, self.min_rad)
         # 動作中なら、自己位置推定関数にデータを渡す。
         # 引数：
         #       現在の位置x(m): 
         #       現在の位置y(m): 
-        #       現在の速度v(m/s):
         #       現在の角度(rad): radian 
+        #       現在の速度v(m/s):
         #       加速度acccerate(g*m/s^2): Ax
-        #       角速度phi(dig): Gz
+        #       角速度phi(deg): Gz
         # 返り値:
         #       最新の位置x(m): x
         #       最新の位置y(m): y
-        #       最新の速度verocity(m/s): v
         #       最新の角度rad(rad)): rad
-        if self.flag == 0:  
-            self.x, self.y, self.v, self.rad = locater.localization_calculation(self.x, self.y, self.v, self.rad, acc_x, gyro_z)
+        #       最新の速度verocity(m/s): v
+        if self.stay_flag == 0:  
+            self.x, self.y, self.rad, self.v = locater.localization_calculation(self.x, self.y, self.rad, self.v, acc_x, gyro_z)
+        elif self.stay_flag == 1:
+            self.v = 0.0
         self.timer += self.interval

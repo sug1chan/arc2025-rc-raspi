@@ -20,11 +20,8 @@ def handler(signum, frame):
     raise SystemExit("SIGNAL REVICE! PROCESS SHUTTING!")
 
 signal.signal(signal.SIGINT, handler)
-# signal.signal(signal.SIGKILL, handler)
-
-# def MyException(Exception):
-#     pass
 interrupt_event = threading.Event()
+
 # Threading Socket
 class MpuServer(threading.Thread):
     def __init__(self):
@@ -55,10 +52,14 @@ class MpuServer(threading.Thread):
                     if message == "get":
                         if bus.timer < mpu.STAY_TIME:
                             print("静止状態のデータ収集中です。")
-                            print(bus.x, bus.y, bus.x, bus.rad)
+                            # print(bus.x, bus.y, bus.x, bus.rad)
+                            result = "{}, {}, {}, {}".format(bus.x, bus.y, bus.rad, bus.v)
+                            # print(bus.x, bus.y, bus.x, bus.rad)
+                            self.sock.sendto(result.encode(), clt_addr)
                         else:
-                            print("データ送信")
-                            result = "{}, {}, {}, {}".format(bus.x, bus.y, bus.x, bus.rad)
+                            print("位置情報送信")
+                            result = "{}, {}, {}, {}".format(bus.x, bus.y, bus.rad, bus.v)
+                            # print(bus.x, bus.y, bus.x, bus.rad)
                             self.sock.sendto(result.encode(), clt_addr)
                     elif message == "shut":
                         print("プロセスの停止")
@@ -73,6 +74,15 @@ class MpuServer(threading.Thread):
             print("!!Socket CLosing!!")
             self.sock.close()
 
+# Ctrl + c (SIGINT)で終了できるようにしている。
+# シグナルハンドラによって、終了処理を出せるように設定済み
+# 対応シグナルを増やす場合は、以下の内容は上に記載してある。
+#  signal.signal(signal.SIGINT, handler)
+#  handler() を実行することで、SystemExit()例外を送信している。
+# UDPソケットは現在、
+#       ローカルホスト
+#       6050ポート
+# で作成している。
 if __name__ == "__main__":
     bus = mpu.Mpu()
     # timer config

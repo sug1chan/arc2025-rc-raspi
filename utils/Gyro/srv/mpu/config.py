@@ -1,7 +1,8 @@
 # Config Parameter
 
 #  SOCKET CONFIG
-MPU_HOST = "localhost"
+# MPU_HOST = "localhost"
+MPU_HOST = "192.168.0.102"
 MPU_PORT = 6050
 MPU_BUF_SIZE = 1028
 

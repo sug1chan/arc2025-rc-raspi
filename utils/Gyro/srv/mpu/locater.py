@@ -104,7 +104,7 @@ def motion_model(x, u, DT):
     B = np.array([ 
         [math.cos(x[2, 0]) * DT, 0.0],  # x = x + cos(rad)*dt*acc
         [math.sin(x[2, 0]) * DT, 0.0],  # y = y + sin(rad)*dt*acc
-        [0.0, DT],                      # radian = rad + phi*dt
+        [0.0, 7.47 * DT],                      # radian = rad + phi*dt
         [9.8 * DT, 0.0]                 # verocity = 9.8 * DT * acc
     ])
 

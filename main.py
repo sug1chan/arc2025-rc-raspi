@@ -356,6 +356,9 @@ def main():
     robot = AutoControl(mode = arg.mode,
                         logconf = None, )
 
+    robot.init()
+    robot.loop()
+
 if __name__ == "__main__":
     main()
 

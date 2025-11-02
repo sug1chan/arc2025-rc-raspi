@@ -64,9 +64,11 @@ class E_STOP_OPT():
     dbg_list = [do, ]
 
 class SERVO_OPT():
-    do = 0
+    do     = 0
+    wakeup = 1
 
-    dbg_list = [do, ]
+    dbg_list = [do,
+                wakeup]
 
 class Cmd_Class():
     def __init__(self,

@@ -6,7 +6,6 @@ CMD_PRM_DLMTR = ','
 CMD_TRMNT = '\r'
 
 class ClientSocketCom():
-        
     def __init__(self, ip_addr, port_num):
         self.client_sock = None
         self.ip_addr = ip_addr

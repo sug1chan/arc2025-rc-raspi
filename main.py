@@ -201,6 +201,7 @@ class AutoControl():
         color_mode = False
 
         self.slowmode(True)
+        self.sendmsg(SERVO_DO, SERVO_OPT.wakeup)
 
         while True:
             if self.ir1.get() and self.ir2.get():

@@ -1,5 +1,7 @@
 import numpy as np
 import socket
+import math
+import time
 
 ADDR = "127.0.0.1"
 PORT = 6050
@@ -25,13 +27,13 @@ class GyroSensor():
         output:
             x : 水平軸
             y : 垂直軸
-        speed : 現在の速度
         theta : 角度
+        speed : 現在の速度
         """
         self.sfd.sendto(self.GET.encode('utf-8'),
                         self.addr)
 
-        result, srv_addr = sock.recvfrom(self.TIMEOUT)
+        result, srv_addr = self.sfd.recvfrom(self.TIMEOUT)
 
         return self.parse(result.decode())
 
@@ -39,17 +41,18 @@ class GyroSensor():
         return self.get()[0]
 
     def get_theta(self, ):
-        return self.get()[2]
+        return self.get()[1]
 
     def parse(self, data):
-        # x, y, speed, theta
-        x, y, sleed, theta = map(lambda x: float(x) * METER_TO_MILLIMETER,
-                                 data.split(" "))
-
-        return np.array([x, y]), sleed, theta
-
-def debug():
-    pass
+        # x, y, theta, speed
+        x, y, theta, speed = map(lambda x: float(x),
+                                 data.split(","))
+        return np.array([x * METER_TO_MILLIMETER, y * METER_TO_MILLIMETER]), theta, speed
 
 if __name__ == "__main__":
-    debug()
+    gyro = GyroSensor()
+    while True:
+        theta = gyro.get_theta()
+        print(math.degrees(theta))
+        time.sleep(1)
+

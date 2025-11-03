@@ -1,8 +1,9 @@
 from . import config
 import math
 import numpy as np
-import pandas as pd
 import scipy
+
+# import pandas as pd
 
 # 引数から位置情報を推定する。
 # クラスではなく、関数で実装？

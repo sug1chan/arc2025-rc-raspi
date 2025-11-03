@@ -2,7 +2,7 @@ from . import config
 from . import locater
 import numpy as np
 import smbus
-
+import math
 
 class Mpu:
 
@@ -53,6 +53,9 @@ class Mpu:
         self.max_rad = config.MAX_RADIAN
         self.min_rad = config.MIN_RADIAN
         self.stay_flag = config.STAY_FLAG
+        # 重力加速度の補正
+        self.grabity_acc = config.GRABITY_ACC
+        self.grabity_gyro = config.GRABITY_GYRO
 
     # 生データ取得
     def read_raw_data(self, addr):
@@ -84,16 +87,11 @@ class Mpu:
         # Gyro : +/- 250 -> 65536 * 500
 
         # self.gyro_data.append([acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z])
-        # print ("Gx=%.2f" %Gx, u'\u00b0'+ "/s", "\tGy=%.2f" %Gy, u'\u00b0'+ "/s", "\tGz=%.2f" %Gz, u'\u00b0'+ "/s", "\tAx=%.2f g" %Ax, "\tAy=%.2f g" %Ay, "\tAz=%.2f g" %Az)
+        # print ("Gx=%.2f" %gyro_x, u'\u00b0'+ "/s", "\tGy=%.2f" %gyro_y, u'\u00b0'+ "/s", "\tGz=%.2f" %gyro_z, u'\u00b0'+ "/s", "\tAx=%.2f g" %acc_x, "\tAy=%.2f g" %acc_y, "\tAz=%.2f g" %acc_z)
         # print ("\tAx=%.2f g" %acc_x, "\tGz=%.2f" %gyro_z, u'\u00b0'+ "/s")
-        # self.counter += self.counter
-        # if self.counter == 1000:
-        #     # データ転送処理？
-        #     data_sender(self.gyro_data)
 
-        # 計算処理
-        # self.gyro_data = [acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z]        
-
+        # 重力加速度の補正
+        acc_x, self.grabity_gyro = locater.grabity_calibration(acc_x, acc_z, self.grabity_acc, self.grabity_gyro)
         # 停止状態の確認および停止判定の値を保持する。
         self.stay_flag, self.max_acc, self.min_acc, self.max_rad, self.min_rad = locater.is_stay(self.timer, acc_x, gyro_z, self.max_acc, self.min_acc, self.max_rad, self.min_rad)
         # 動作中なら、自己位置推定関数にデータを渡す。
@@ -110,6 +108,9 @@ class Mpu:
         #       最新の角度rad(rad)): rad
         #       最新の速度verocity(m/s): v
         if self.stay_flag == 0:  
+            # if(0.01 >= math.fabs(acc_z - self.grabity_acc)):
+            #acc_x, self.grabity_gyro = locater.grabity_calibration(acc_x, gyro_y, self.grabity_acc, self.grabity_gyro) 
+            #print ("\tAx=%.2f g" %acc_x, "\tGy=%.2f" %self.grabity_gyro, u'\u00b0'+ "/s", "\tAz=%.2f g" %acc_z)
             self.x, self.y, self.rad, self.v = locater.localization_calculation(self.x, self.y, self.rad, self.v, acc_x, gyro_z)
         elif self.stay_flag == 1:
             self.v = 0.0

@@ -75,13 +75,14 @@ class DetectEGP():
                                       verbose = self.verbose, ))
 
 def test():
-    MODEL  = "../data/win/first_model.pt"
+    MODEL  = "../data/model.pt"
     # VIDEO  = "../data/win/eggplant.mp4"
     #VIDEO  = "../data/win/eggplant_under.mp4"
-    VIDEO  = "../data/win/front_camera.mp4"
-    OUTPUT = "../data/win/result_front_camera.mp4"
+    #VIDEO  = "../data/win/front_camera.mp4"
+    VIDEO = None
+    OUTPUT = "../data/result_front_camera.mp4"
 
-    model  = DetectEGP(weights = MODEL, threshold = .65)
+    model  = DetectEGP(weights = MODEL, threshold = .35)
     cam    = Camera(path = VIDEO)
 
     width   = cam.width
@@ -92,8 +93,8 @@ def test():
                         width,
                         height,
                         fps)
-    # fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    # out = cv2.VideoWriter(OUTPUT, fourcc, fps, (width, height))
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    out = cv2.VideoWriter(OUTPUT, fourcc, fps, (width, height))
 
     print(f"front: {cam.size}")
     print(f"front: {cam.center}")
@@ -118,11 +119,11 @@ def test():
 
             annotated_frame = res.plot()
 
-            # cv2.imshow('test camera', annotated_frame)
+            cv2.imshow('test camera', annotated_frame)
             out.write(annotated_frame)
 
-            # if cv2.waitKey(1) & 0xFF == ord('q'):
-            #     break
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
         except Exception as e:
             print(e)

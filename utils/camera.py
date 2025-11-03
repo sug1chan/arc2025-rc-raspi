@@ -128,8 +128,8 @@ def test(mp4 = None):
         try:
             frame = cam.read()
             frame = cv2.resize(frame, None, fx=.5, fy=.5)
-            # cv2.imshow('test camera', frame)
-            mp4.write(frame)
+            cv2.imshow('test camera', frame)
+            #mp4.write(frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -141,6 +141,7 @@ def test(mp4 = None):
 
 if __name__ == "__main__":
     #mp4_path = "../data/win/data/eggplant.mp4"
-    mp4_path = "../data/win/eggplant.mp4"
+    #mp4_path = "../data/win/eggplant.mp4"
+    mp4_path = None
     test(mp4_path)
 

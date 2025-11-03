@@ -79,7 +79,7 @@ class ClientSocketCom():
             self.client_sock = None
 
 def debug():
-    test_addr = "127.0.0.1"
+    test_addr = "192.168.250.2"
     test_port = 8000
     command = [(CAT_MOVE, CAT_MOVE_OPT),
                (CAT_SLOW_MODE, CAT_SLOW_OPT),

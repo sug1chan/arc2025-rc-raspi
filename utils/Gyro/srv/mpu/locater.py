@@ -1,7 +1,7 @@
 from . import config
 import math
 import numpy as np
-import pandas as pd
+#import pandas as pd
 import scipy
 
 # 引数から位置情報を推定する。
